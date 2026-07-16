@@ -26,6 +26,7 @@ design-os 是一套**纯文本、agent 无关**的操作系统,用四件事把�
 3. 对 agent 说「用 design-os 起步,做一个 ××」——它会自动加载路由、先给你 3 个参考候选。
 
 > 双端/多端接入(Claude Code / Codex / 其他)、可选外部依赖、字体获取,全在 [DEPLOY.md](DEPLOY.md)。
+> 想搞懂**怎么用好**它、它为什么能让 AI 做出不像 AI 的 UI → [USAGE.md](USAGE.md)。
 
 ## 目录
 
