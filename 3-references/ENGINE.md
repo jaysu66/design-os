@@ -23,6 +23,11 @@
 - **怎么自建**:见 EXTRACT.md —— 用户丢链接即可把任意公开站提取成一个符合契约的档案;`3-references/PERSONAL/` 就是你自建库的默认落点(收藏久了它本身就是你的私有风格库)。
 - 注意:1 主风格 + ≤1 辅风格,混 3 个以上必出泥;adapt 不 clone(不搬 logo/品牌文案/商标构图)。
 
+### 从哪弄一个风格库
+
+- **自建(最干净)**:用 EXTRACT.md 从「主动公开设计规范」的站提取——Material Design / Ant Design / shadcn / Vercel(Geist) 等,落进 PERSONAL。
+- **用现成产品**:styles.refero.design 这类站提供成套结构化设计 tokens。**按其官方条款订阅 / 导出**后,把数据放进 `DESIGN_OS_STYLE_LIB` 指向的目录即可挂接。design-os 只定义「怎么挂接和检索」,**不替你获取、不分发任何第三方数据**。
+
 ## 来源 3:外部实时(本地打不中才上)
 
 | 源 | 什么时候用 | 怎么用 | 注意什么 |
