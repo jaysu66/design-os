@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>看得出,说得出 — 审美训练页</title>
+<style>
+  :root{
+    --bg:#fafafa; --surface:#fff; --ink:#171717; --ink2:#525252; --ink3:#8f8f8f;
+    --line:#e5e5e5; --line2:#d4d4d4;
+    --accent:#0a6cff; --accent-ink:#fff;
+    --bad:#e5484d; --good:#2f9e68;
+    --r:8px;
+    --ease:cubic-bezier(0.2,0,0,1);
+    --font:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased;padding-bottom:64px}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+
+  /* ---------- header ---------- */
+  header{padding:64px 0 32px;border-bottom:1px solid var(--line);background:var(--surface)}
+  header h1{font-size:clamp(28px,4.5vw,40px);font-weight:800;letter-spacing:-0.04em;line-height:1.15}
+  header p.sub{margin-top:12px;color:var(--ink2);max-width:620px}
+  header p.sub b{color:var(--ink)}
+  .toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+  .toc a{font-size:12.5px;color:var(--ink2);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:4px 12px;background:var(--bg);transition:border-color .18s var(--ease),color .18s var(--ease)}
+  .toc a:hover{border-color:var(--ink);color:var(--ink)}
+
+  /* ---------- section scaffold ---------- */
+  section.concept{padding:48px 0 8px}
+  .num{font-size:12px;font-weight:600;color:var(--ink3);letter-spacing:0.08em}
+  h2{font-size:24px;font-weight:750;letter-spacing:-0.02em;margin-top:4px}
+  p.law{margin-top:8px;color:var(--ink2);max-width:640px}
+  p.law strong{color:var(--ink)}
+
+  .duel{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px}
+  @media (max-width:760px){.duel{grid-template-columns:1fr}}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+  .panel .tag{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;letter-spacing:0.06em;padding:8px 14px;border-bottom:1px solid var(--line);color:var(--ink3)}
+  .panel .tag::before{content:"";width:7px;height:7px;border-radius:50%}
+  .panel.bad .tag::before{background:var(--bad)}
+  .panel.good .tag::before{background:var(--good)}
+  .panel.bad .tag{color:var(--bad)}
+  .panel.good .tag{color:var(--good)}
+  .stage{padding:24px;min-height:180px;display:flex;flex-direction:column;justify-content:center}
+
+  .notes{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:13px;color:var(--ink2)}
+  @media (max-width:760px){.notes{grid-template-columns:1fr}}
+  .notes ul{list-style:none}
+  .notes li{padding-left:18px;position:relative;margin-top:4px}
+  .notes li::before{position:absolute;left:0;font-weight:700}
+  .notes .nb li::before{content:"✕";color:var(--bad)}
+  .notes .ng li::before{content:"✓";color:var(--good)}
+
+  .say{margin-top:20px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:var(--r);padding:14px 18px;font-size:14px}
+  .say b{color:var(--accent);font-size:12px;letter-spacing:0.06em;display:block;margin-bottom:4px}
+
+  /* =========================================================
+     concept 1 层级
+  ==========================================================*/
+  .h-bad p,.h-bad h4,.h-bad div{font-size:17px;font-weight:700;color:#333;margin-top:8px}
+  .h-bad .btns{display:flex;gap:8px}
+  .h-bad button{font-size:16px;font-weight:700;padding:10px 18px;border:2px solid #333;background:#fff;border-radius:6px;color:#333}
+  .h-good h4{font-size:30px;font-weight:800;letter-spacing:-0.035em;line-height:1.15}
+  .h-good p{font-size:14px;color:var(--ink3);margin-top:10px;max-width:36ch}
+  .h-good .btns{display:flex;gap:8px;margin-top:20px;align-items:center}
+  .h-good .cta{font-size:13.5px;font-weight:600;padding:9px 18px;background:var(--ink);color:#fff;border:1px solid var(--ink);border-radius:6px;cursor:pointer}
+  .h-good .ghost{font-size:13.5px;font-weight:500;padding:9px 14px;background:none;color:var(--ink2);border:none;cursor:pointer}
+
+  /* =========================================================
+     concept 2 间距
+  ==========================================================*/
+  .card-demo{border:1px solid var(--line);border-radius:8px;background:#fff}
+  .s-bad .card-demo{padding:9px 23px 31px 13px}
+  .s-bad .row{display:flex;gap:21px;align-items:center}
+  .s-bad .avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#c7d2fe,#a5b4fc);flex-shrink:0}
+  .s-bad .name{font-weight:700;font-size:15px}
+  .s-bad .meta{font-size:12.5px;color:var(--ink3);margin-top:14px}
+  .s-bad .desc{font-size:13px;color:var(--ink2);margin-top:3px}
+  .s-bad button{margin-top:26px;font-size:13px;padding:7px 12px;border:1px solid var(--line2);background:#fff;border-radius:6px}
+  .s-good .card-demo{padding:24px}
+  .s-good .row{display:flex;gap:12px;align-items:center}
+  .s-good .avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#bfdbfe,#93c5fd);flex-shrink:0}
+  .s-good .name{font-weight:600;font-size:15px}
+  .s-good .meta{font-size:12.5px;color:var(--ink3);margin-top:2px}
+  .s-good .desc{font-size:13px;color:var(--ink2);margin-top:16px}
+  .s-good button{margin-top:16px;font-size:13px;padding:7px 14px;border:1px solid var(--line2);background:#fff;border-radius:6px}
+
+  /* =========================================================
+     concept 3 字体
+  ==========================================================*/
+  .t-bad h5{font-size:22px;font-weight:700;letter-spacing:0}
+  .t-bad p{font-size:14px;font-weight:700;line-height:1.25;margin-top:8px}
+  .t-good h5{font-size:22px;font-weight:750;letter-spacing:-0.03em}
+  .t-good p{font-size:14px;font-weight:400;line-height:1.75;margin-top:10px;max-width:42ch;color:var(--ink2)}
+  .t-good .kicker{font-size:11.5px;font-weight:600;letter-spacing:0.1em;color:var(--ink3);text-transform:uppercase;margin-bottom:8px}
+
+  /* =========================================================
+     concept 4 颜色
+  ==========================================================*/
+  .c-bad .hero-mini{background:linear-gradient(135deg,#8b5cf6,#ec4899);border-radius:8px;padding:20px;color:#fff}
+  .c-bad h6{font-size:17px;font-weight:800}
+  .c-bad .badge{display:inline-block;background:#3b82f6;color:#fff;font-size:11px;padding:2px 8px;border-radius:999px;margin-bottom:8px}
+  .c-bad .btns{margin-top:14px;display:flex;gap:8px}
+  .c-bad .b1{background:#22c55e;color:#fff;border:none;font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:6px}
+  .c-bad .b2{background:#f97316;color:#fff;border:none;font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:6px}
+  .c-good .hero-mini{background:#fff;border:1px solid var(--line);border-radius:8px;padding:20px}
+  .c-good .badge{display:inline-block;background:var(--bg);border:1px solid var(--line);color:var(--ink2);font-size:11px;padding:2px 8px;border-radius:999px;margin-bottom:8px}
+  .c-good h6{font-size:17px;font-weight:750;letter-spacing:-0.02em}
+  .c-good p{font-size:13px;color:var(--ink2);margin-top:4px}
+  .c-good .btns{margin-top:14px;display:flex;gap:8px;align-items:center}
+  .c-good .b1{background:var(--accent);color:#fff;border:none;font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:6px}
+  .c-good .b2{background:none;color:var(--ink2);border:none;font-size:12.5px;padding:7px 6px}
+
+  /* =========================================================
+     concept 5 深度
+  ==========================================================*/
+  .d-bad .float{background:#fff;border-radius:22px;box-shadow:0 14px 44px rgba(0,0,0,.28);padding:22px;width:82%}
+  .d-bad .float .in{background:#fff;border-radius:18px;box-shadow:0 10px 28px rgba(0,0,0,.22);padding:14px;margin-top:12px;font-size:13px}
+  .d-good .flat{background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.04);padding:22px;width:82%;transition:border-color .18s var(--ease)}
+  .d-good .flat:hover{border-color:var(--line2)}
+  .d-good .flat .in{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:14px;margin-top:12px;font-size:13px;color:var(--ink2)}
+  .d-lab{font-size:13.5px;font-weight:600}
+
+  /* =========================================================
+     concept 6 动效
+  ==========================================================*/
+  .m-stage{position:relative}
+  .replay{position:absolute;top:-6px;right:0;font-size:12px;border:1px solid var(--line2);background:#fff;border-radius:6px;padding:4px 10px;cursor:pointer;color:var(--ink2)}
+  .replay:hover{border-color:var(--ink);color:var(--ink)}
+  .m-item{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 16px;font-size:13.5px;margin-top:10px}
+  .m-bad .m-item{opacity:0}
+  .m-bad.play .m-item{animation:flyBad 1.4s linear forwards}
+  .m-bad.play .m-item:nth-child(2){animation-delay:0s}
+  .m-bad.play .m-item:nth-child(3){animation-delay:0s}
+  .m-bad.play .m-item:nth-child(4){animation-delay:0s}
+  @keyframes flyBad{0%{opacity:0;transform:translateY(110px) scale(.7) rotate(-4deg)}60%{opacity:1;transform:translateY(-16px) scale(1.06)}80%{transform:translateY(6px)}100%{opacity:1;transform:none}}
+  .m-good .m-item{opacity:0}
+  .m-good.play .m-item{animation:riseGood .24s var(--ease) forwards}
+  .m-good.play .m-item:nth-child(2){animation-delay:.05s}
+  .m-good.play .m-item:nth-child(3){animation-delay:.11s}
+  .m-good.play .m-item:nth-child(4){animation-delay:.17s}
+  @keyframes riseGood{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+  /* =========================================================
+     concept 7 状态
+  ==========================================================*/
+  .st-btn-bad{font-size:13.5px;font-weight:600;padding:9px 18px;background:#404040;color:#fff;border:none;border-radius:6px;outline:none;cursor:pointer}
+  .st-input-bad{display:block;margin-top:12px;width:100%;font-size:13.5px;padding:9px 12px;border:1px solid var(--line);border-radius:6px;outline:none;background:#fff}
+  .st-btn-good{font-size:13.5px;font-weight:600;padding:9px 18px;background:var(--ink);color:#fff;border:none;border-radius:6px;cursor:pointer;transition:background .15s var(--ease),transform .15s var(--ease)}
+  .st-btn-good:hover{background:#000;transform:translateY(-1px)}
+  .st-btn-good:active{transform:translateY(0) scale(.98)}
+  .st-btn-good:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .st-btn-good[disabled]{background:#e5e5e5;color:#a3a3a3;cursor:not-allowed;transform:none}
+  .st-input-good{display:block;margin-top:12px;width:100%;font-size:13.5px;padding:9px 12px;border:1px solid var(--line2);border-radius:6px;outline:none;background:#fff;transition:border-color .15s var(--ease),box-shadow .15s var(--ease)}
+  .st-input-good:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,108,255,.12)}
+  .st-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .skeleton{margin-top:12px;height:12px;border-radius:4px;background:linear-gradient(90deg,#eee 25%,#f7f7f7 50%,#eee 75%);background-size:200% 100%;animation:shim 1.4s infinite}
+  .skeleton.w60{width:60%}
+  .skeleton.w40{width:40%}
+  @keyframes shim{to{background-position:-200% 0}}
+  .hint{font-size:12px;color:var(--ink3);margin-top:10px}
+
+  /* =========================================================
+     concept 8 自洽
+  ==========================================================*/
+  .coh-bad h6{font-family:Georgia,"STSong",serif;font-size:19px;font-style:italic}
+  .coh-bad .pill{display:inline-block;margin-top:10px;background:#fb7185;color:#fff;font-size:12px;font-weight:700;padding:6px 16px;border-radius:999px}
+  .coh-bad table{margin-top:12px;border-collapse:collapse;font-size:12.5px;width:100%}
+  .coh-bad td{border:1px solid #333;padding:6px 10px}
+  .coh-bad .stamp{display:inline-block;margin-top:10px;font-family:"Comic Sans MS","Kaiti",cursive;color:#7c3aed;font-size:13px;transform:rotate(-2deg)}
+  .coh-good h6{font-size:19px;font-weight:750;letter-spacing:-0.02em}
+  .coh-good .pill{display:inline-block;margin-top:10px;background:var(--bg);border:1px solid var(--line);color:var(--ink2);font-size:12px;font-weight:500;padding:5px 12px;border-radius:6px}
+  .coh-good table{margin-top:12px;border-collapse:separate;border-spacing:0;font-size:12.5px;width:100%;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .coh-good td{border-bottom:1px solid var(--line);padding:7px 10px;color:var(--ink2)}
+  .coh-good tr:last-child td{border-bottom:none}
+  .coh-good td:first-child{color:var(--ink);font-weight:500}
+
+  /* =========================================================
+     concept 9 AI 味
+  ==========================================================*/
+  .ai-bad{text-align:center}
+  .ai-bad h6{font-size:20px;font-weight:800;background:linear-gradient(90deg,#8b5cf6,#ec4899);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .ai-bad p{font-size:12.5px;color:var(--ink3);margin-top:6px}
+  .ai-bad .cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:16px}
+  .ai-bad .c{border:1px solid var(--line);border-radius:14px;padding:12px 8px;font-size:11.5px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+  .ai-bad .c span{font-size:18px;display:block;margin-bottom:4px}
+  .ai-good{text-align:left}
+  .ai-good .grid2{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;align-items:center}
+  .ai-good h6{font-size:19px;font-weight:750;letter-spacing:-0.025em;line-height:1.25}
+  .ai-good h6 em{font-style:normal;border-bottom:2px solid var(--accent)}
+  .ai-good p{font-size:12.5px;color:var(--ink2);margin-top:8px}
+  .ai-good .proof{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;font-size:11.5px;color:var(--ink2)}
+  .ai-good .proof b{display:block;font-size:20px;font-weight:750;letter-spacing:-0.03em;color:var(--ink)}
+
+  /* =========================================================
+     concept 10 签名时刻
+  ==========================================================*/
+  .sig-stage{display:flex;flex-direction:column;align-items:center;gap:16px;padding:32px 24px}
+  .magnetic{position:relative;font-size:14px;font-weight:600;padding:12px 26px;background:var(--ink);color:#fff;border:none;border-radius:999px;cursor:pointer;transition:transform .18s var(--ease);will-change:transform}
+  .sig-note{font-size:12.5px;color:var(--ink3);max-width:46ch;text-align:center}
+
+  /* ---------- cheatsheet ---------- */
+  .cheat{margin-top:56px;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .cheat .head{padding:20px 24px;border-bottom:1px solid var(--line)}
+  .cheat .head h3{font-size:18px;font-weight:750;letter-spacing:-0.02em}
+  .cheat .head p{font-size:13px;color:var(--ink2);margin-top:2px}
+  .cheat table{width:100%;border-collapse:collapse;font-size:13px}
+  .cheat th{text-align:left;font-size:11.5px;font-weight:600;letter-spacing:0.06em;color:var(--ink3);padding:10px 24px;border-bottom:1px solid var(--line);background:var(--bg)}
+  .cheat td{padding:10px 24px;border-bottom:1px solid var(--line);vertical-align:top}
+  .cheat tr:last-child td{border-bottom:none}
+  .cheat td.gut{color:var(--ink2);white-space:nowrap}
+  .cheat td.speak{color:var(--ink)}
+  .cheat td.speak code{background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-family:var(--font);font-size:12.5px}
+  @media (max-width:760px){.cheat td.gut{white-space:normal}.cheat th,.cheat td{padding:10px 14px}}
+
+  .formula{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:760px){.formula{grid-template-columns:1fr}}
+  .fcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px 24px}
+  .fcard h4{font-size:15px;font-weight:700;letter-spacing:-0.01em}
+  .fcard ol{margin-top:10px;padding-left:18px;font-size:13.5px;color:var(--ink2)}
+  .fcard li{margin-top:6px}
+  .fcard li b{color:var(--ink)}
+  .fcard p.eg{margin-top:12px;font-size:12.5px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;color:var(--ink2)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>看得出,说得出</h1>
+    <p class="sub">10 个概念,把你的<b>直觉</b>变成 agent 能执行的<b>词汇</b>。你不需要会做设计 —— 你是创意总监,agent 是设计师。总监的本事只有两样:<b>看出哪里不对,说出哪里不对。</b>每一节:先看两个例子哪个舒服(校准直觉),再读差异点(获得词汇),记住那句话(下次直接说)。</p>
+    <nav class="toc">
+      <a href="#c1">① 层级</a><a href="#c2">② 间距</a><a href="#c3">③ 字体</a><a href="#c4">④ 颜色</a><a href="#c5">⑤ 深度</a><a href="#c6">⑥ 动效</a><a href="#c7">⑦ 状态</a><a href="#c8">⑧ 自洽</a><a href="#c9">⑨ AI 味</a><a href="#c10">⑩ 签名</a><a href="#cheat">速查表</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ================= 1 层级 ================= -->
+  <section class="concept" id="c1">
+    <div class="num">01 · HIERARCHY</div>
+    <h2>视觉层级</h2>
+    <p class="law">一屏之内,眼睛应该<strong>被安排好先看什么、后看什么</strong>。工具只有四个:大小、粗细、颜色深浅、位置。"感觉乱"十有八九是层级平了。</p>
+    <div class="duel">
+      <div class="panel bad"><div class="tag">BAD · 全都一样重</div>
+        <div class="stage h-bad">
+          <h4>Pulse 数据平台</h4>
+          <p>实时看清你产品的每一次心跳</p>
+          <div class="btns" style="margin-top:12px"><button>开始使用</button><button>查看文档</button></div>
+        </div>
+      </div>
+      <div class="panel good"><div class="tag">GOOD · 一眼三层</div>
+        <div class="stage h-good">
+          <h4>看清产品的每一次心跳</h4>
+          <p>Pulse 把埋点、看板和告警放进同一张画布,五分钟接入。</p>
+          <div class="btns"><button class="cta">开始使用</button><button class="ghost">查看文档 →</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <ul class="nb"><li>标题、副标题、按钮字号重量全部接近</li><li>两个按钮同样式 —— 没告诉我该点哪个</li></ul>
+      <ul class="ng"><li>大 → 中 → 小三层,一眼扫完</li><li>主按钮实心、次按钮幽灵化:重要性有排序</li></ul>
+    </div>
+    <div class="say"><b>你该说</b>"层级太平了,我找不到重点 —— 标题压不住场,把主次拉开;两个按钮分出主次。"</div>
+  </section>
+
+  <!-- ================= 2 间距 ================= -->
+  <section class="concept" id="c2">
+    <div class="num">02 · SPACING</div>
+    <h2>间距与节奏</h2>
+    <p class="law">间距只用固定音阶(4 / 8 / 12 / 16 / 24 / 32 / 48 / 64),且<strong>相关的靠近,无关的远离</strong>(亲密性)。间距随机 = 廉价感的头号来源。</p>
+    <div class="duel">
+      <div class="panel bad"><div class="tag">BAD · 间距随机</div>
+        <div class="stage s-bad">
+          <div class="card-demo">
+            <div class="row"><div class="avatar"></div><div class="name">林晚秋</div></div>
+            <div class="meta">产品设计 · 上海</div>
+            <div class="desc">负责 Pulse 看板体验,关注数据可视化。</div>
+            <button>+ 关注</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel good"><div class="tag">GOOD · 音阶 + 亲密性</div>
+        <div class="stage s-good">
+          <div class="card-demo">
+            <div class="row"><div class="avatar"></div><div><div class="name">林晚秋</div><div class="meta">产品设计 · 上海</div></div></div>
+            <div class="desc">负责 Pulse 看板体验,关注数据可视化。</div>
+            <button>+ 关注</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <ul class="nb"><li>padding 四边不等(9/23/31/13),纯随机</li><li>名字和职位隔很远,却和头像挤在一起 —— 关系感错乱</li></ul>
+      <ul class="ng"><li>卡片 padding 统一 24,元素间距全在音阶上</li><li>名字+职位紧贴成一组(8px 内),简介独立成段(16px 外)</li></ul>
+    </div>
+    <div class="say"><b>你该说</b>"间距节奏乱 —— 统一到 8 的倍数音阶;相关的元素收紧成组,组和组之间拉开。"</div>
+  </section>
+
+  <!-- ================= 3 字体 ================= -->
+  <section class="concept" id="c3">
+    <div class="num">03 · TYPOGRAPHY</div>
+    <h2>字体排印</h2>
+    <p class="law">字号走音阶、<strong>大标题收紧字距(约 -0.03em)</strong>、正文行高 1.6-1.75、一行别超 65 字符。全加粗 = 等于没加粗。</p>
+    <div class="duel">
+      <div class="panel bad"><div class="tag">BAD · 全 bold + 行宽失控</div>
+        <div class="stage t-bad">
+          <h5>为什么数据要实时</h5>
+          <p>延迟的数据会让团队做出过时的决策,当你的竞争对手已经根据这一小时的转化率调整了投放,你还在看昨天的报表,实时性不是奢侈品而是决策系统的基础设施,每一分钟的延迟都在积累机会成本。</p>
+        </div>
+      </div>
+      <div class="panel good"><div class="tag">GOOD · 音阶 + 呼吸感</div>
+        <div class="stage t-good">
+          <div class="kicker">WHY REALTIME</div>
+          <h5>为什么数据要实时</h5>
+          <p>延迟的数据让团队做出过时的决策。当对手已按这一小时的转化率调整投放,你还在看昨天的报表。</p>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <ul class="nb"><li>正文也是 700 重量,和标题打架</li><li>行高 1.25 太挤,一行 50+ 字读到迷路</li><li>标题用默认字距,大字号下发散</li></ul>
+      <ul class="ng"><li>重量只给标题;正文 400 + 行高 1.75</li><li>行宽锁 42ch;文案也砍到只留骨头</li><li>标题 -0.03em 收紧;上方加小字导语(kicker)造第三层</li></ul>
+    </div>
+    <div class="say"><b>你该说</b>"标题字距收紧一点,正文别加粗、行高放到 1.7、一行别超 65 字。"</div>
+  </section>
+
+  <!-- ================= 4 颜色 ================= -->
+  <section class="concept" id="c4">
+    <div class="num">04 · COLOR</div>
+    <h2>颜色</h2>
+    <p class="law">层次交给<strong>灰阶</strong>,彩色只留一个强调色、且一屏出现 <strong>≤ 3 处</strong>。颜色越多,每个颜色越不值钱。</p>
+    <div class="duel">
+      <div class="panel bad"><div class="tag">BAD · 四个彩色抢戏</div>
+        <div class="stage c-bad">
+          <div class="hero-mini">
+            <span class="badge">NEW</span>
+            <h6>Pulse 2.0 上线</h6>
+            <div class="btns"><button class="b1">立即升级</button><button class="b2">了解更多</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel good"><div class="tag">GOOD · 灰阶 + 单强调</div>
+        <div class="stage c-good">
+          <div class="hero-mini">
+            <span class="badge">NEW</span>
+            <h6>Pulse 2.0 上线</h6>
+            <p>查询速度提升 4 倍,看板支持实时协作。</p>
+            <div class="btns"><button class="b1">立即升级</button><button class="b2">了解更多</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <ul class="nb"><li>紫粉渐变底 + 蓝徽章 + 绿按钮 + 橙按钮:四种彩色互相喊叫</li><li>渐变底上的白字对比度告急</li></ul>
+      <ul class="ng"><li>灰阶承担全部层次(近黑标题/中灰正文/浅灰徽章)</li><li>唯一的蓝只出现在主 CTA 上 —— 所以它有权威</li></ul>
+    </div>
+    <div class="say"><b>你该说</b>"颜色太多了 —— 砍到一个强调色,层次用灰阶做;强调色一屏最多出现 3 处。"</div>
+  </section>
+
+  <!-- ================= 5 深度 ================= -->
+  <section class="concept" id="c5">
+    <div class="num">05 · DEPTH</div>
+    <h2>深度与材质</h2>
+    <p class="law">高级产品用 <strong>1px 边框 + 极轻阴影</strong>建立深度,而不是大黑影。阴影越重越像 2015 年的模板。</p>
+    <div class="duel">
+      <div class="panel bad"><div class="tag">BAD · 重阴影 + 大圆角</div>
+        <div class="stage" style="align-items:center;display:flex;justify-content:center">
+          <div class="d-bad" style="width:100%;display:flex;justify-content:center"><div class="float"><div class="d-lab">本月账单</div><div class="in">¥ 12,480 · 已出账</div></div></div>
+        </div>
+      </div>
+      <div class="panel good"><div class="tag">GOOD · 1px 边框 + 微影</div>
+        <div class="stage" style="align-items:center;display:flex;justify-content:center">
+          <div class="d-good" style="width:100%;display:flex;justify-content:center"><div class="flat"><div class="d-lab">本月账单</div><div class="in">¥ 12,480 · 已出账</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <ul class="nb"><li>0 14px 44px 的大黑影:卡片像悬浮在半空的贴纸</li><li>22px 圆角 + 影中影,层层浮起,廉价感叠加</li></ul>
+      <ul class="ng"><li>1px 边框 + 0 1px 2px 微影:贴地、克制、可信</li><li>内层用底色差(灰底)区分,不再动用阴影;hover 时边框加深(试试)</li></ul>
+    </div>
+    <div class="say"><b>你该说</b>"阴影太重了,像模板 —— 换 1px 边框 + 极轻阴影,深度用底色差做。"</div>
+  </section>
+
+  <!-- ================= 6 动效 ================= -->
+  <section class="concept" id="c6">
+    <div class="num">06 · MOTION</div>
+    <h2>动效</h2>
+    <p class="law">UI 动效 <strong>150–400ms、先快后慢(ease-out)、逐个错峰(stagger)</strong>。匀速(linear)是机器感,超 400ms 是拖沓,全体同时飞是廉价。点两边的「重放」对比感受。</p>
+    <div class="duel">
+      <div class="panel bad"><div class="tag">BAD · 1.4s 匀速弹跳飞入</div>
+        <div class="stage m-stage"><button class="replay" data-target="mbad">↻ 重放</button>
+          <div class="m-bad" id="mbad">
+            <div class="m-item">📈 转化率 4.2%</div>
+            <div class="m-item">👥 活跃用户 18,204</div>
+            <div class="m-item">⚡ 平均响应 213ms</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel good"><div class="tag">GOOD · 240ms ease-out 错峰</div>
+        <div class="stage m-stage"><button class="replay" data-target="mgood">↻ 重放</button>
+          <div class="m-good" id="mgood">
+            <div class="m-item">转化率 <b>4.2%</b></div>
+            <div class="m-item">活跃用户 <b>18,204</b></div>
+            <div class="m-item">平均响应 <b>213ms</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <ul class="nb"><li>1.4 秒 + 弹跳 + 旋转:动画本身成了主角</li><li>三项同时起跳,没有先后叙事</li></ul>
+      <ul class="ng"><li>240ms、位移只有 12px:感觉"内容自己落定"</li><li>每项错峰 60ms:有节奏,但不耽误你干活</li></ul>
+    </div>
+    <div class="say"><b>你该说</b>"动效降到 300ms 以内、ease-out、错峰进场;高频操作(菜单/切换)不要加动画。"</div>
+  </section>
+
+  <!-- ================= 7 状态 ================= -->
+  <section class="concept" id="c7">
+    <div class="num">07 · STATES</div>
+    <h2>状态完整性</h2>
+    <p class="law">每个可交互元素都欠你四个状态:<strong>hover / focus / active / disabled</strong>;每个数据区欠你三个:<strong>loading / empty / error</strong>。AI 最常只交付"静止的完美"。用鼠标悬停、按 Tab、点按试试下面两边。</p>
+    <div class="duel">
+      <div class="panel bad"><div class="tag">BAD · 只有一种状态</div>
+        <div class="stage">
+          <div class="st-row"><button class="st-btn-bad">保存修改</button><button class="st-btn-bad" style="opacity:.9">删除</button></div>
+          <input class="st-input-bad" placeholder="输入项目名称…">
+          <div class="hint">悬停、Tab、点按 —— 毫无反应,像贴图。</div>
+        </div>
+      </div>
+      <div class="panel good"><div class="tag">GOOD · 状态齐全</div>
+        <div class="stage">
+          <div class="st-row"><button class="st-btn-good">保存修改</button><button class="st-btn-good" disabled>删除</button></div>
+          <input class="st-input-good" placeholder="输入项目名称…">
+          <div class="skeleton w60"></div><div class="skeleton w40"></div>
+          <div class="hint">hover 微升、Tab 有 focus 环、按下有回压、禁用有灰态、加载有骨架。</div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <ul class="nb"><li>无 hover / focus / active:用户的每次操作都得不到回应</li><li>loading 与 empty 没设计:数据一慢页面就"裸奔"</li></ul>
+      <ul class="ng"><li>四态齐全,键盘用户也有 focus 环(无障碍必需)</li><li>骨架屏占位:慢的时候也体面</li></ul>
+    </div>
+    <div class="say"><b>你该说</b>"把状态补全:hover/focus/active/disabled 四态,数据区加 loading 骨架、empty 和 error 态。"</div>
+  </section>
+
+  <!-- ================= 8 自洽 ================= -->
+  <section class="concept" id="c8">
+    <div class="num">08 · COHERENCE</div>
+    <h2>自洽:讲同一个故事</h2>
+    <p class="law">色、字、间距、圆角、动效五个维度必须<strong>讲同一个故事</strong>。单看每个元素都还行、放一起就难受 —— 那就是自洽碎了。</p>
+    <div class="duel">
+      <div class="panel bad"><div class="tag">BAD · 四种语言打架</div>
+        <div class="stage coh-bad">
+          <h6>账单明细</h6>
+          <span class="pill">已支付 ✓</span>
+          <table><tr><td>基础版订阅</td><td>¥ 99</td></tr><tr><td>超量查询</td><td>¥ 21</td></tr></table>
+          <span class="stamp">☆ 感谢你的支持哦 ~</span>
+        </div>
+      </div>
+      <div class="panel good"><div class="tag">GOOD · 一种语言到底</div>
+        <div class="stage coh-good">
+          <h6>账单明细</h6>
+          <span class="pill">已支付</span>
+          <table><tr><td>基础版订阅</td><td>¥ 99</td></tr><tr><td>超量查询</td><td>¥ 21</td></tr></table>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <ul class="nb"><li>衬线斜体标题(杂志腔)+ 粉色胶囊(消费 App 腔)+ 硬边框表格(Excel 腔)+ 手写体(贴纸腔)</li><li>四种腔调各自成立,合在一起精神分裂</li></ul>
+      <ul class="ng"><li>同一字系、同一圆角、同一灰阶、同一密度</li><li>没有任何一个元素"外来" —— 这就是产品感的来源</li></ul>
+    </div>
+    <div class="say"><b>你该说</b>"这几个元素在讲不同的故事 —— 统一到同一套语言:同字体系、同圆角、同灰阶。"</div>
+  </section>
+
+  <!-- ================= 9 AI 味 ================= -->
+  <section class="concept" id="c9">
+    <div class="num">09 · AI TELLS</div>
+    <h2>AI 味诊断</h2>
+    <p class="law">AI 味 = 模型的<strong>默认值</strong>:居中 hero + 渐变字 + 三卡 + emoji 图标 + "赋能/无缝/一站式"套话。它不是丑,是<strong>谁都不是</strong>。</p>
+    <div class="duel">
+      <div class="panel bad"><div class="tag">BAD · 教科书级模板脸</div>
+        <div class="stage ai-bad">
+          <h6>赋能您的数据团队</h6>
+          <p>一站式智能分析平台,无缝集成,开箱即用</p>
+          <div class="cards">
+            <div class="c"><span>🚀</span>极速部署</div>
+            <div class="c"><span>🔒</span>安全可靠</div>
+            <div class="c"><span>✨</span>智能洞察</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel good"><div class="tag">GOOD · 有观点、有细节</div>
+        <div class="stage ai-good">
+          <div class="grid2">
+            <div>
+              <h6>别再等昨天的报表<br>做<em>今天</em>的决定</h6>
+              <p>Pulse 每 3 秒刷新一次全量指标 —— 比你的竞对快一个下午。</p>
+            </div>
+            <div class="proof"><b>3s</b>全量指标刷新间隔<div style="margin-top:8px;border-top:1px solid var(--line);padding-top:8px"><b>4×</b>查询速度 vs 上一代</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <ul class="nb"><li>"赋能/一站式/无缝/开箱即用":说了等于没说</li><li>居中 + 渐变字 + 三个 emoji 卡:出厂默认布局</li></ul>
+      <ul class="ng"><li>文案有具体主张和数字(3 秒、4 倍),像一个真的产品在说话</li><li>不对称两栏 + 一处下划线强调:有布局观点</li></ul>
+    </div>
+    <div class="say"><b>你该说</b>"这是模板脸 —— 文案换成具体主张和真实数字;布局别居中对称,给我一个有观点的构图。"</div>
+  </section>
+
+  <!-- ================= 10 签名 ================= -->
+  <section class="concept" id="c10">
+    <div class="num">10 · SIGNATURE</div>
+    <h2>签名时刻</h2>
+    <p class="law">整页留 <strong>1–2 处</strong>让人记住的细节,其余全部克制 —— 克制是签名的前提,处处惊喜等于没有惊喜。</p>
+    <div class="duel" style="grid-template-columns:1fr">
+      <div class="panel good"><div class="tag">GOOD · 全页唯一的"活物"(把鼠标移近按钮)</div>
+        <div class="stage sig-stage">
+          <button class="magnetic" id="magBtn">开始 14 天试用</button>
+          <div class="sig-note">这颗按钮会被鼠标轻轻"吸住" —— 因为整页只有它会,你才记得住它。如果每个元素都在动,它就消失了。</div>
+        </div>
+      </div>
+    </div>
+    <div class="say"><b>你该说</b>"整页给我留一个签名时刻(一处特别的交互或视觉),其他地方全部收着做。"</div>
+  </section>
+
+  <!-- ================= cheatsheet ================= -->
+  <section id="cheat">
+    <div class="cheat">
+      <div class="head"><h3>直觉 → 词汇速查表</h3><p>感觉说不清的时候,按左列找到你的直觉,照右列开口。</p></div>
+      <table>
+        <tr><th>你的直觉</th><th>大概率问题</th><th>对 agent 说</th></tr>
+        <tr><td class="gut">"感觉乱"</td><td>层级 / 间距</td><td class="speak"><code>层级拉开,主次分明</code> <code>间距统一到 8 的倍数,相关的收紧成组</code></td></tr>
+        <tr><td class="gut">"感觉廉价"</td><td>阴影 / 颜色 / 字距</td><td class="speak"><code>大阴影换 1px 边框</code> <code>砍到一个强调色</code> <code>标题字距收紧</code></td></tr>
+        <tr><td class="gut">"感觉挤"</td><td>留白不足</td><td class="speak"><code>区块间距升一档,给内容呼吸感</code></td></tr>
+        <tr><td class="gut">"感觉空/单薄"</td><td>层次不足</td><td class="speak"><code>加灰阶层次和 1px 分隔,不要加颜色</code></td></tr>
+        <tr><td class="gut">"太花了"</td><td>动效/颜色过量</td><td class="speak"><code>动效降档只留一处,颜色回归灰阶</code></td></tr>
+        <tr><td class="gut">"像 AI 做的"</td><td>默认值堆积</td><td class="speak"><code>去模板脸:文案换具体数字,布局去居中,删 emoji 图标</code></td></tr>
+        <tr><td class="gut">"没记忆点"</td><td>缺签名时刻</td><td class="speak"><code>给一处签名时刻,其余保持克制</code></td></tr>
+        <tr><td class="gut">"死板/像贴图"</td><td>状态缺失</td><td class="speak"><code>补全 hover/focus/active/disabled + loading/empty</code></td></tr>
+        <tr><td class="gut">"不像一家人"</td><td>自洽碎了</td><td class="speak"><code>统一设计语言:同字系同圆角同灰阶</code></td></tr>
+        <tr><td class="gut">"高级一点"(慎用)</td><td>方向太抽象</td><td class="speak"><code>像 Linear/Stripe 那样 ×</code> → 换成 <code>参考 XX 站(丢链接),学它的 YY</code></td></tr>
+      </table>
+    </div>
+
+    <div class="formula">
+      <div class="fcard">
+        <h4>开工公式(给 brief,4 句话)</h4>
+        <ol>
+          <li><b>表达什么</b>:这个页面想让人记住的一句话</li>
+          <li><b>给谁看</b>:目标读者是谁、在什么场景打开</li>
+          <li><b>参考</b>:丢 1 个链接(没有就让 agent 从参考库出 3 个候选给你挑)</li>
+          <li><b>绝对不要</b>:你的黑名单(哪怕只有一条)</li>
+        </ol>
+        <p class="eg">例:"做 Acme 官网。表达'企业级 AI 工作台,可靠不花哨';给 CTO 看;参考这个站的克制感(链接);绝对不要紫色渐变。"</p>
+      </div>
+      <div class="fcard">
+        <h4>反馈公式(位置 + 问题 + 方向)</h4>
+        <ol>
+          <li><b>位置</b>:哪个区块哪个元素("首屏主标题")</li>
+          <li><b>问题</b>:用速查表的词汇("压不住场,层级太平")</li>
+          <li><b>方向</b>(可选):大致往哪调("再大再重,字距收紧")</li>
+        </ol>
+        <p class="eg">要点:<b>说出问题就够了,解法让 agent 提</b>。最忌只说"不好看,重做" —— 那等于让它重新抽签。</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // 重放动效
+  document.querySelectorAll('.replay').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const el=document.getElementById(btn.dataset.target);
+      el.classList.remove('play');void el.offsetWidth;el.classList.add('play');
+    });
+  });
+  // 进入视口自动播一次
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('play');io.unobserve(e.target)}}),{threshold:.4});
+  io.observe(document.getElementById('mbad'));io.observe(document.getElementById('mgood'));
+  // magnetic 按钮(签名时刻)
+  const mag=document.getElementById('magBtn');
+  const zone=mag.parentElement;
+  zone.addEventListener('mousemove',e=>{
+    const r=mag.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+    const dx=e.clientX-cx,dy=e.clientY-cy,dist=Math.hypot(dx,dy);
+    if(dist<140){mag.style.transform=`translate(${dx*.18}px,${dy*.18}px)`}
+    else{mag.style.transform=''}
+  });
+  zone.addEventListener('mouseleave',()=>{mag.style.transform=''});
+</script>
+</body>
+</html>

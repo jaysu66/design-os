@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>摸得着的手感 — 交互训练页(进阶篇)</title>
+<style>
+  :root{
+    --bg:#fafafa; --surface:#fff; --ink:#171717; --ink2:#525252; --ink3:#8f8f8f;
+    --line:#e5e5e5; --line2:#d4d4d4;
+    --accent:#0a6cff;
+    --bad:#e5484d; --good:#2f9e68;
+    --r:8px;
+    --ease:cubic-bezier(0.2,0,0,1);
+    --font:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased;padding-bottom:64px}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+
+  header{padding:64px 0 32px;border-bottom:1px solid var(--line);background:var(--surface)}
+  header .kicker{font-size:11.5px;font-weight:600;letter-spacing:0.1em;color:var(--ink3)}
+  header h1{font-size:clamp(28px,4.5vw,40px);font-weight:800;letter-spacing:-0.04em;line-height:1.15;margin-top:8px}
+  header p.sub{margin-top:12px;color:var(--ink2);max-width:640px}
+  header p.sub b{color:var(--ink)}
+  .toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+  .toc a{font-size:12.5px;color:var(--ink2);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:4px 12px;background:var(--bg);transition:border-color .18s var(--ease),color .18s var(--ease)}
+  .toc a:hover{border-color:var(--ink);color:var(--ink)}
+
+  section.concept{padding:48px 0 8px}
+  .num{font-size:12px;font-weight:600;color:var(--ink3);letter-spacing:0.08em}
+  h2{font-size:24px;font-weight:750;letter-spacing:-0.02em;margin-top:4px}
+  p.law{margin-top:8px;color:var(--ink2);max-width:640px}
+  p.law strong{color:var(--ink)}
+  .try{display:inline-block;margin-top:8px;font-size:12px;font-weight:600;color:var(--accent);background:rgba(10,108,255,.07);border-radius:999px;padding:3px 12px}
+
+  .duel{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+  @media (max-width:760px){.duel{grid-template-columns:1fr}}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+  .panel .tag{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;letter-spacing:0.06em;padding:8px 14px;border-bottom:1px solid var(--line)}
+  .panel .tag::before{content:"";width:7px;height:7px;border-radius:50%}
+  .panel.bad .tag::before{background:var(--bad)}
+  .panel.good .tag::before{background:var(--good)}
+  .panel.bad .tag{color:var(--bad)}
+  .panel.good .tag{color:var(--good)}
+  .stage{padding:24px;min-height:170px;display:flex;flex-direction:column;justify-content:center;gap:10px}
+
+  .notes{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:13px;color:var(--ink2)}
+  @media (max-width:760px){.notes{grid-template-columns:1fr}}
+  .notes ul{list-style:none}
+  .notes li{padding-left:18px;position:relative;margin-top:4px}
+  .notes li::before{position:absolute;left:0;font-weight:700}
+  .notes .nb li::before{content:"✕";color:var(--bad)}
+  .notes .ng li::before{content:"✓";color:var(--good)}
+
+  .say{margin-top:20px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:var(--r);padding:14px 18px;font-size:14px}
+  .say b{color:var(--accent);font-size:12px;letter-spacing:0.06em;display:block;margin-bottom:4px}
+
+  /* ========== 1 反馈即时性 ========== */
+  .rs-btn{font-size:13.5px;font-weight:600;padding:10px 20px;border:none;border-radius:6px;cursor:pointer;color:#fff;background:var(--ink);align-self:flex-start}
+  .rs-bad-btn{transition:none}
+  .rs-good-btn{transition:transform .12s var(--ease),background .12s var(--ease)}
+  .rs-good-btn:hover{background:#000}
+  .rs-good-btn:active{transform:scale(.96)}
+  .rs-log{font-size:12.5px;color:var(--ink3);min-height:20px}
+  .rs-log.done{color:var(--good);font-weight:600}
+
+  /* ========== 2 过渡连续性 ========== */
+  .acc{border:1px solid var(--line);border-radius:8px;background:#fff;overflow:hidden;width:100%}
+  .acc-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;font-size:13.5px;font-weight:600;cursor:pointer;user-select:none}
+  .acc-head .chev{font-size:12px;color:var(--ink3)}
+  .acc-good .chev{transition:transform .24s var(--ease)}
+  .acc-good.open .chev{transform:rotate(180deg)}
+  .acc-body{font-size:13px;color:var(--ink2);padding:0 16px}
+  .acc-bad .acc-body{display:none;padding-bottom:0}
+  .acc-bad.open .acc-body{display:block;padding-bottom:14px}
+  .acc-good .acc-body{max-height:0;opacity:0;overflow:hidden;transition:max-height .26s var(--ease),opacity .22s var(--ease),padding .26s var(--ease)}
+  .acc-good.open .acc-body{max-height:120px;opacity:1;padding-bottom:14px}
+
+  /* ========== 3 物理感 ========== */
+  .ph-zone{display:flex;align-items:center;justify-content:center;min-height:150px}
+  .ph-card{width:190px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px;text-align:center;font-size:13px;cursor:default;user-select:none}
+  .ph-card b{display:block;font-size:15px;letter-spacing:-0.01em;margin-bottom:2px}
+  .ph-bad-card:hover{transform:translate(14px,-14px) rotate(3deg)}
+  .ph-good-card{will-change:transform}
+
+  /* ========== 4 滚动叙事 ========== */
+  .sc-outer{border:1px solid var(--line);border-radius:8px;background:#fff;height:200px;overflow-y:auto;position:relative}
+  .sc-track-bad{padding:16px}
+  .sc-track-bad p{font-size:13px;color:var(--ink2);margin-bottom:14px}
+  .sc-track-good{height:420px;position:relative}
+  .sc-sticky{position:sticky;top:0;height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+  .sc-num{font-size:44px;font-weight:800;letter-spacing:-0.04em;font-variant-numeric:tabular-nums}
+  .sc-cap{font-size:12.5px;color:var(--ink3)}
+  .sc-bar{width:60%;height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+  .sc-bar i{display:block;height:100%;width:0%;background:var(--accent);border-radius:2px}
+
+  /* ========== 5 高频克制 ========== */
+  .menu-wrap{position:relative;align-self:flex-start}
+  .menu-btn{font-size:13px;font-weight:500;padding:8px 14px;border:1px solid var(--line2);background:#fff;border-radius:6px;cursor:pointer}
+  .menu{position:absolute;top:calc(100% + 6px);left:0;width:170px;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.06);padding:6px;z-index:5;transform-origin:top left}
+  .menu div{font-size:13px;padding:7px 10px;border-radius:5px;cursor:pointer}
+  .menu div:hover{background:var(--bg)}
+  .menu.hidden{display:none}
+  .menu-bad.show{animation:menuBad .45s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes menuBad{0%{opacity:0;transform:scale(.5) translateY(-30px) rotate(-4deg)}60%{transform:scale(1.06) translateY(4px)}100%{opacity:1;transform:none}}
+  .menu-good.show{animation:menuGood .12s var(--ease)}
+  @keyframes menuGood{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+  .click-count{font-size:12px;color:var(--ink3)}
+
+  /* ========== 6 加载体验 ========== */
+  .ld-btn{font-size:13px;font-weight:500;padding:8px 14px;border:1px solid var(--line2);background:#fff;border-radius:6px;cursor:pointer;align-self:flex-start}
+  .ld-area{min-height:96px}
+  .ld-row{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);opacity:0}
+  .ld-row .dot{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#bfdbfe,#93c5fd);flex-shrink:0}
+  .ld-row .l1{font-size:13px;font-weight:600}
+  .ld-row .l2{font-size:11.5px;color:var(--ink3)}
+  .ld-row.in{animation:ldIn .24s var(--ease) forwards}
+  @keyframes ldIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .ld-row.instant{opacity:1}
+  .sk{height:10px;border-radius:4px;background:linear-gradient(90deg,#eee 25%,#f7f7f7 50%,#eee 75%);background-size:200% 100%;animation:shim 1.4s infinite}
+  @keyframes shim{to{background-position:-200% 0}}
+  .sk-row{display:flex;gap:10px;align-items:center;padding:10px 0}
+  .sk-dot{width:28px;height:28px;border-radius:50%;background:#eee;flex-shrink:0;animation:shimBg 1.4s infinite}
+  @keyframes shimBg{0%,100%{background:#eee}50%{background:#f5f5f5}}
+  .ld-wait{font-size:12.5px;color:var(--ink3);padding:20px 0}
+
+  /* ========== 7 签名 ========== */
+  .sig-stage{display:flex;flex-direction:column;align-items:center;gap:16px;padding:36px 24px}
+  .sig-btn{position:relative;overflow:hidden;font-size:14px;font-weight:600;padding:13px 30px;background:var(--ink);color:#fff;border:none;border-radius:999px;cursor:pointer;will-change:transform;transition:background .2s var(--ease)}
+  .sig-btn.ok{background:var(--good)}
+  .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.35);transform:scale(0);animation:rip .5s var(--ease) forwards;pointer-events:none}
+  @keyframes rip{to{transform:scale(3);opacity:0}}
+  .sig-note{font-size:12.5px;color:var(--ink3);max-width:48ch;text-align:center}
+
+  /* cheat */
+  .cheat{margin-top:56px;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .cheat .head{padding:20px 24px;border-bottom:1px solid var(--line)}
+  .cheat .head h3{font-size:18px;font-weight:750;letter-spacing:-0.02em}
+  .cheat .head p{font-size:13px;color:var(--ink2);margin-top:2px}
+  .cheat table{width:100%;border-collapse:collapse;font-size:13px}
+  .cheat th{text-align:left;font-size:11.5px;font-weight:600;letter-spacing:0.06em;color:var(--ink3);padding:10px 24px;border-bottom:1px solid var(--line);background:var(--bg)}
+  .cheat td{padding:10px 24px;border-bottom:1px solid var(--line);vertical-align:top}
+  .cheat tr:last-child td{border-bottom:none}
+  .cheat td.gut{color:var(--ink2);white-space:nowrap}
+  .cheat td.speak code{background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-family:var(--font);font-size:12.5px}
+  @media (max-width:760px){.cheat td.gut{white-space:normal}.cheat th,.cheat td{padding:10px 14px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="kicker">进阶篇 · 与「审美训练」(基础篇)配套</div>
+    <h1>摸得着的手感</h1>
+    <p class="sub">基础篇练的是<b>看</b>(静态审美),这一页练的是<b>手感</b>(交互的身体记忆)。7 个概念全部要你<b>亲手点、滚、悬停</b>去对比 —— 手感没法用眼睛学。每节记住那句话,下次直接对 agent 说。</p>
+    <nav class="toc">
+      <a href="#i1">① 即时反馈</a><a href="#i2">② 过渡连续</a><a href="#i3">③ 物理感</a><a href="#i4">④ 滚动叙事</a><a href="#i5">⑤ 高频克制</a><a href="#i6">⑥ 加载体验</a><a href="#i7">⑦ 签名微交互</a><a href="#icheat">速查表</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ========== 1 即时反馈 ========== -->
+  <section class="concept" id="i1">
+    <div class="num">01 · RESPONSE</div>
+    <h2>即时反馈</h2>
+    <p class="law">按下的 <strong>100ms 内</strong>必须有可见回应 —— 哪怕真正的活儿还没干完。超过 100ms,手就开始怀疑;超过 1 秒还没动静,用户开始连点。</p>
+    <span class="try">👆 各连点两边按钮几次,感受手的信任差</span>
+    <div class="duel">
+      <div class="panel bad"><div class="tag">BAD · 按了没反应,450ms 后才动</div>
+        <div class="stage">
+          <button class="rs-btn rs-bad-btn" id="rsBad">提交订单</button>
+          <div class="rs-log" id="rsBadLog"></div>
+        </div>
+      </div>
+      <div class="panel good"><div class="tag">GOOD · 按下瞬间有回压,完成有确认</div>
+        <div class="stage">
+          <button class="rs-btn rs-good-btn" id="rsGood">提交订单</button>
+          <div class="rs-log" id="rsGoodLog"></div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <ul class="nb"><li>点击瞬间零反馈:不确定点没点上,本能再点一次(重复提交事故就这么来的)</li></ul>
+      <ul class="ng"><li>按下 96% 缩放回压(&lt;100ms)+ 完成态文字确认:手每一步都收到回执</li></ul>
+    </div>
+    <div class="say"><b>你该说</b>"按钮按下去要有即时回压;耗时操作先给反馈再干活,别让我怀疑没点上。"</div>
+  </section>
+
+  <!-- ========== 2 过渡连续 ========== -->
+  <section class="concept" id="i2">
+    <div class="num">02 · CONTINUITY</div>
+    <h2>过渡连续性</h2>
+    <p class="law">界面状态变化要<strong>连续</strong>:元素从哪来、到哪去,眼睛要能跟上。瞬间跳变(display:none→block)让大脑每次都重新找一遍。</p>
+    <span class="try">👆 反复展开/收起两边,感受眼睛的负担差</span>
+    <div class="duel">
+      <div class="panel bad"><div class="tag">BAD · 瞬间跳变</div>
+        <div class="stage">
+          <div class="acc acc-bad" id="accBad">
+            <div class="acc-head">退款政策 <span class="chev">▾</span></div>
+            <div class="acc-body">签收 30 天内可无理由退款,运费由平台承担。发起入口在「订单 → 售后」。</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel good"><div class="tag">GOOD · 260ms 展开,箭头同步旋转</div>
+        <div class="stage">
+          <div class="acc acc-good" id="accGood">
+            <div class="acc-head">退款政策 <span class="chev">▾</span></div>
+            <div class="acc-body">签收 30 天内可无理由退款,运费由平台承担。发起入口在「订单 → 售后」。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <ul class="nb"><li>内容凭空出现凭空消失,页面高度猛跳,下方内容"闪移"</li></ul>
+      <ul class="ng"><li>高度+透明度一起过渡,箭头旋转预告状态 —— 变化有因果,眼睛不用重新扫描</li></ul>
+    </div>
+    <div class="say"><b>你该说</b>"状态切换加过渡,别瞬间跳变 —— 展开收起、显示隐藏都要 200ms 左右的连续动画。"</div>
+  </section>
+
+  <!-- ========== 3 物理感 ========== -->
+  <section class="concept" id="i3">
+    <div class="num">03 · PHYSICS</div>
+    <h2>物理感</h2>
+    <p class="law">跟随鼠标的元素要有<strong>质量和阻尼</strong>(每帧向目标靠近一小步),而不是瞬移。真实世界没有瞬移,所以瞬移=塑料感。</p>
+    <span class="try">👆 把鼠标在两张卡片上慢慢画圈</span>
+    <div class="duel">
+      <div class="panel bad"><div class="tag">BAD · 瞬移,非黑即白</div>
+        <div class="stage ph-zone">
+          <div class="ph-card ph-bad-card"><b>Pro 套餐</b>¥ 99 / 月</div>
+        </div>
+      </div>
+      <div class="panel good"><div class="tag">GOOD · 阻尼跟随,有重量</div>
+        <div class="stage ph-zone" id="phZone">
+          <div class="ph-card ph-good-card" id="phCard"><b>Pro 套餐</b>¥ 99 / 月</div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <ul class="nb"><li>hover 的一瞬间"啪"地跳到位:只有 0 和 1 两个状态</li></ul>
+      <ul class="ng"><li>卡片被鼠标"轻轻带着走",松手缓缓归位 —— 中间有无数个过渡状态,这就是物理感</li></ul>
+    </div>
+    <div class="say"><b>你该说</b>"跟随/悬停效果要有阻尼和弹簧感,别瞬移 —— 用 lerp 或 spring,不要直接 set 位置。"</div>
+  </section>
+
+  <!-- ========== 4 滚动叙事 ========== -->
+  <section class="concept" id="i4">
+    <div class="num">04 · SCROLL</div>
+    <h2>滚动叙事</h2>
+    <p class="law">滚动可以不只是"翻页",还能<strong>驱动内容变化</strong>(scrub):滚多少,画面走多少,回滚就倒放 —— 用户手里像握着进度条,这是高级站的标配语法。</p>
+    <span class="try">👆 分别在两个小窗口里滚动(可回滚)</span>
+    <div class="duel">
+      <div class="panel bad"><div class="tag">BAD · 滚动只是翻页</div>
+        <div class="sc-outer">
+          <div class="sc-track-bad">
+            <p>2019 年,我们服务了第 1 家客户。</p>
+            <p>2021 年,客户数达到 1,000。</p>
+            <p>2023 年,客户数突破 40,000。</p>
+            <p>2026 年,128,000 家企业在用 Pulse。</p>
+            <p>—— 这些数字躺着,滚动和内容无关。</p>
+          </div>
+        </div>
+      </div>
+      <div class="panel good"><div class="tag">GOOD · 滚动驱动数字生长(试试回滚)</div>
+        <div class="sc-outer" id="scOuter">
+          <div class="sc-track-good">
+            <div class="sc-sticky">
+              <div class="sc-num" id="scNum">1</div>
+              <div class="sc-cap">家企业正在使用 Pulse</div>
+              <div class="sc-bar"><i id="scBar"></i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <ul class="nb"><li>内容与滚动无关:滚动只是运输工具,故事是死的</li></ul>
+      <ul class="ng"><li>滚动进度 = 数字进度:往下滚数字涨、回滚数字退 —— 内容在你手里,这就是 pin &amp; scrub</li></ul>
+    </div>
+    <div class="say"><b>你该说</b>"这段叙事做成滚动驱动(pin + scrub):滚动进度映射内容进度,可回滚。"</div>
+  </section>
+
+  <!-- ========== 5 高频克制 ========== -->
+  <section class="concept" id="i5">
+    <div class="num">05 · RESTRAINT</div>
+    <h2>高频克制</h2>
+    <p class="law">动效的成本 = 单次时长 × 使用频率。<strong>每天用几百次的东西(菜单/切换/tooltip)要 &lt;150ms 或干脆不动画</strong>。低频大场面才配大动效。</p>
+    <span class="try">👆 把两边菜单各连开三次 —— 第三次你就懂了</span>
+    <div class="duel">
+      <div class="panel bad"><div class="tag">BAD · 每次都表演 450ms 弹跳</div>
+        <div class="stage">
+          <div class="menu-wrap">
+            <button class="menu-btn" id="mbBad">工作区 ▾</button>
+            <div class="menu menu-bad hidden" id="menuBad"><div>个人空间</div><div>团队空间</div><div>归档项目</div></div>
+          </div>
+          <div class="click-count" id="cntBad">已打开 0 次 · 累计等待 0ms</div>
+        </div>
+      </div>
+      <div class="panel good"><div class="tag">GOOD · 120ms 出现,几乎无感</div>
+        <div class="stage">
+          <div class="menu-wrap">
+            <button class="menu-btn" id="mbGood">工作区 ▾</button>
+            <div class="menu menu-good hidden" id="menuGood"><div>个人空间</div><div>团队空间</div><div>归档项目</div></div>
+          </div>
+          <div class="click-count" id="cntGood">已打开 0 次 · 累计等待 0ms</div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <ul class="nb"><li>第一次挺可爱,第三次开始烦,第十次想砸键盘 —— 累计等待就是被偷走的时间</li></ul>
+      <ul class="ng"><li>快到感觉不到"动画"的存在,只感觉"跟手" —— 好的高频动效是隐形的</li></ul>
+    </div>
+    <div class="say"><b>你该说</b>"高频操作的动画降到 150ms 以内或直接去掉;想炫留给首屏和低频大场面。"</div>
+  </section>
+
+  <!-- ========== 6 加载体验 ========== -->
+  <section class="concept" id="i6">
+    <div class="num">06 · LOADING</div>
+    <h2>加载体验</h2>
+    <p class="law">同样等 1.5 秒,<strong>体感可以差一倍</strong>:骨架屏先画出"内容的形状",到货后渐进入场 —— 等待被拆成"马上有"的预期。</p>
+    <span class="try">👆 点两边的「加载数据」,拿手机掐表都行</span>
+    <div class="duel">
+      <div class="panel bad"><div class="tag">BAD · 白屏死等,突然全出</div>
+        <div class="stage">
+          <button class="ld-btn" id="ldBadBtn">加载数据</button>
+          <div class="ld-area" id="ldBadArea"></div>
+        </div>
+      </div>
+      <div class="panel good"><div class="tag">GOOD · 骨架占位 + 渐进入场</div>
+        <div class="stage">
+          <button class="ld-btn" id="ldGoodBtn">加载数据</button>
+          <div class="ld-area" id="ldGoodArea"></div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <ul class="nb"><li>点完 1.5 秒毫无动静:页面像死了,然后内容"砸"出来</li></ul>
+      <ul class="ng"><li>0ms 出骨架(告诉你"在路上了")→ 内容错峰渐入:同样的耗时,焦虑少一半</li></ul>
+    </div>
+    <div class="say"><b>你该说</b>"加载态用骨架屏占位,内容到了错峰渐入 —— 不许白屏死等再突然全出。"</div>
+  </section>
+
+  <!-- ========== 7 签名微交互 ========== -->
+  <section class="concept" id="i7">
+    <div class="num">07 · SIGNATURE</div>
+    <h2>签名微交互</h2>
+    <p class="law">把前面六课叠在一个元素上:磁吸(物理感)+ 涟漪(即时反馈)+ 状态弹簧(过渡连续)。<strong>整页只允许一个元素这么奢侈</strong> —— 这是它成为记忆点的前提。</p>
+    <span class="try">👆 鼠标靠近它、点它</span>
+    <div class="duel" style="grid-template-columns:1fr">
+      <div class="panel good"><div class="tag">GOOD · 全页唯一的"活物"</div>
+        <div class="stage sig-stage">
+          <button class="sig-btn" id="sigBtn">预约演示</button>
+          <div class="sig-note">磁吸是物理感,涟漪是即时反馈,变绿打勾是状态过渡 —— 三课合一。但如果页面上每个按钮都这样,它就什么都不是了。</div>
+        </div>
+      </div>
+    </div>
+    <div class="say"><b>你该说</b>"主 CTA 做一个签名微交互(磁吸/涟漪/弹簧任选组合),其他按钮全部保持克制。"</div>
+  </section>
+
+  <!-- ========== cheat ========== -->
+  <section id="icheat">
+    <div class="cheat">
+      <div class="head"><h3>手感 → 词汇速查表</h3><p>交互不舒服但说不清时,按左列找感受,照右列开口。(静态审美速查见基础篇)</p></div>
+      <table>
+        <tr><th>你的手感</th><th>大概率问题</th><th>对 agent 说</th></tr>
+        <tr><td class="gut">"点了没反应?"</td><td>反馈超 100ms</td><td class="speak"><code>按下要有即时回压,耗时操作先反馈再干活</code></td></tr>
+        <tr><td class="gut">"眼睛跟不上"</td><td>状态跳变</td><td class="speak"><code>切换加 200ms 过渡,别瞬间跳变</code></td></tr>
+        <tr><td class="gut">"感觉塑料/生硬"</td><td>没有物理感</td><td class="speak"><code>跟随用弹簧和阻尼,不要瞬移</code></td></tr>
+        <tr><td class="gut">"页面是死的"</td><td>滚动只是翻页</td><td class="speak"><code>关键叙事段做滚动驱动(pin+scrub)</code></td></tr>
+        <tr><td class="gut">"越用越烦"</td><td>高频动画超时</td><td class="speak"><code>高频操作动画 &lt;150ms 或去掉</code></td></tr>
+        <tr><td class="gut">"等得焦虑"</td><td>加载没设计</td><td class="speak"><code>骨架屏占位 + 内容错峰渐入</code></td></tr>
+        <tr><td class="gut">"没有一处记得住"</td><td>缺签名微交互</td><td class="speak"><code>主 CTA 给一个签名微交互,其余克制</code></td></tr>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // ===== 1 即时反馈 =====
+  const rsBad=document.getElementById('rsBad'),rsBadLog=document.getElementById('rsBadLog');
+  const rsGood=document.getElementById('rsGood'),rsGoodLog=document.getElementById('rsGoodLog');
+  let badBusy=false,goodBusy=false;
+  rsBad.addEventListener('click',()=>{
+    if(badBusy)return;badBusy=true;
+    rsBadLog.textContent='';rsBadLog.classList.remove('done');
+    setTimeout(()=>{rsBadLog.textContent='……嗯?刚才那 450ms 你是不是想再点一次?';badBusy=false},450);
+  });
+  rsGood.addEventListener('click',()=>{
+    if(goodBusy)return;goodBusy=true;
+    rsGoodLog.textContent='处理中…';rsGoodLog.classList.remove('done');
+    setTimeout(()=>{rsGoodLog.textContent='✓ 订单已提交';rsGoodLog.classList.add('done');goodBusy=false},450);
+  });
+
+  // ===== 2 过渡连续 =====
+  document.getElementById('accBad').querySelector('.acc-head').addEventListener('click',function(){this.parentElement.classList.toggle('open')});
+  document.getElementById('accGood').querySelector('.acc-head').addEventListener('click',function(){this.parentElement.classList.toggle('open')});
+
+  // ===== 3 物理感(lerp 阻尼跟随) =====
+  const phZone=document.getElementById('phZone'),phCard=document.getElementById('phCard');
+  let tx=0,ty=0,cx=0,cy=0,phRun=false;
+  function phLoop(){
+    cx+=(tx-cx)*0.10;cy+=(ty-cy)*0.10;
+    phCard.style.transform=`translate(${cx}px,${cy}px) rotate(${cx*0.05}deg)`;
+    if(Math.abs(tx-cx)>.1||Math.abs(ty-cy)>.1||tx!==0||ty!==0){requestAnimationFrame(phLoop)}else{phRun=false;phCard.style.transform=''}
+  }
+  phZone.addEventListener('mousemove',e=>{
+    const r=phZone.getBoundingClientRect();
+    tx=(e.clientX-(r.left+r.width/2))*0.28;
+    ty=(e.clientY-(r.top+r.height/2))*0.28;
+    if(!phRun){phRun=true;requestAnimationFrame(phLoop)}
+  });
+  phZone.addEventListener('mouseleave',()=>{tx=0;ty=0;if(!phRun){phRun=true;requestAnimationFrame(phLoop)}});
+
+  // ===== 4 滚动叙事(scrub) =====
+  const scOuter=document.getElementById('scOuter'),scNum=document.getElementById('scNum'),scBar=document.getElementById('scBar');
+  scOuter.addEventListener('scroll',()=>{
+    const p=Math.min(1,Math.max(0,scOuter.scrollTop/(scOuter.scrollHeight-scOuter.clientHeight)));
+    const eased=1-Math.pow(1-p,2);
+    scNum.textContent=Math.round(1+eased*127999).toLocaleString();
+    scBar.style.width=(p*100)+'%';
+  });
+
+  // ===== 5 高频克制 =====
+  function bindMenu(btnId,menuId,cntId,cost){
+    const btn=document.getElementById(btnId),menu=document.getElementById(menuId),cnt=document.getElementById(cntId);
+    let n=0;
+    btn.addEventListener('click',e=>{
+      e.stopPropagation();
+      if(menu.classList.contains('hidden')){
+        menu.classList.remove('hidden');menu.classList.remove('show');void menu.offsetWidth;menu.classList.add('show');
+        n++;cnt.textContent=`已打开 ${n} 次 · 累计等待 ${n*cost}ms`;
+      }else{menu.classList.add('hidden')}
+    });
+    document.addEventListener('click',()=>menu.classList.add('hidden'));
+  }
+  bindMenu('mbBad','menuBad','cntBad',450);
+  bindMenu('mbGood','menuGood','cntGood',120);
+
+  // ===== 6 加载体验 =====
+  const data=[['林晚秋','产品设计 · 刚刚上线新看板'],['陈默','工程 · 修复了 3 个告警'],['苏黎','增长 · 周报已生成']];
+  function rowHTML(d){return `<div class="ld-row"><div class="dot"></div><div><div class="l1">${d[0]}</div><div class="l2">${d[1]}</div></div></div>`}
+  document.getElementById('ldBadBtn').addEventListener('click',()=>{
+    const a=document.getElementById('ldBadArea');
+    a.innerHTML='';
+    setTimeout(()=>{a.innerHTML=data.map(rowHTML).join('');a.querySelectorAll('.ld-row').forEach(r=>r.classList.add('instant'))},1500);
+  });
+  document.getElementById('ldGoodBtn').addEventListener('click',()=>{
+    const a=document.getElementById('ldGoodArea');
+    a.innerHTML='<div class="sk-row"><div class="sk-dot"></div><div style="flex:1"><div class="sk" style="width:40%"></div><div class="sk" style="width:65%;margin-top:6px"></div></div></div>'.repeat(3);
+    setTimeout(()=>{
+      a.innerHTML=data.map(rowHTML).join('');
+      a.querySelectorAll('.ld-row').forEach((r,i)=>{setTimeout(()=>r.classList.add('in'),i*70)});
+    },1500);
+  });
+
+  // ===== 7 签名(磁吸+涟漪+状态) =====
+  const sig=document.getElementById('sigBtn'),sigZone=sig.parentElement;
+  let sx=0,sy=0,scx=0,scy=0,sRun=false;
+  function sigLoop(){
+    scx+=(sx-scx)*0.14;scy+=(sy-scy)*0.14;
+    sig.style.transform=`translate(${scx}px,${scy}px)`;
+    if(Math.abs(sx-scx)>.1||Math.abs(sy-scy)>.1||sx!==0||sy!==0){requestAnimationFrame(sigLoop)}else{sRun=false;sig.style.transform=''}
+  }
+  sigZone.addEventListener('mousemove',e=>{
+    const r=sig.getBoundingClientRect(),bx=r.left+r.width/2,by=r.top+r.height/2;
+    const dx=e.clientX-bx,dy=e.clientY-by;
+    if(Math.hypot(dx,dy)<130){sx=dx*.22;sy=dy*.22}else{sx=0;sy=0}
+    if(!sRun){sRun=true;requestAnimationFrame(sigLoop)}
+  });
+  sigZone.addEventListener('mouseleave',()=>{sx=0;sy=0;if(!sRun){sRun=true;requestAnimationFrame(sigLoop)}});
+  sig.addEventListener('click',function(e){
+    const r=this.getBoundingClientRect();
+    const rip=document.createElement('span');rip.className='ripple';
+    const size=Math.max(r.width,r.height);
+    rip.style.cssText=`width:${size}px;height:${size}px;left:${e.clientX-r.left-size/2}px;top:${e.clientY-r.top-size/2}px`;
+    this.appendChild(rip);setTimeout(()=>rip.remove(),520);
+    if(!this.classList.contains('ok')){this.classList.add('ok');this.textContent='✓ 已预约';setTimeout(()=>{this.classList.remove('ok');this.textContent='预约演示'},1600)}
+  });
+</script>
+</body>
+</html>

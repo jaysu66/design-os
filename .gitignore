@@ -1,0 +1,19 @@
+# ── 个人精选参考库(你收藏的站,含第三方设计资产,不入公开仓库)──
+# 保留 README 说明,忽略所有实际收藏条目
+3-references/PERSONAL/*/
+!3-references/PERSONAL/README.md
+
+# ── 字体等大二进制:指向下载,不入库(见 DEPLOY.md 的字体获取)──
+*.otf
+*.ttf
+*.woff
+*.woff2
+
+# ── 系统杂项 ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 说明:preferences.md 以「空模板」形式随仓库分发。
+# 你自用(fork/私有)时它会被 agent 填充为你的私人偏好,正常提交无妨;
+# 若你要把改动 PR 回开源上游,切勿提交你填充过的 preferences.md。
